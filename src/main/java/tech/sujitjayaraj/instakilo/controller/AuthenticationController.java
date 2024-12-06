@@ -4,15 +4,16 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.sujitjayaraj.instakilo.dto.LoginResponse;
 import tech.sujitjayaraj.instakilo.dto.LoginUserDto;
 import tech.sujitjayaraj.instakilo.dto.RegisterUserDto;
 import tech.sujitjayaraj.instakilo.dto.UserResponseDto;
 import tech.sujitjayaraj.instakilo.entity.User;
 import tech.sujitjayaraj.instakilo.service.AuthenticationService;
+import tech.sujitjayaraj.instakilo.service.JwtService;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -21,10 +22,13 @@ import java.time.LocalDateTime;
 @RequestMapping("/auth")
 public class AuthenticationController {
 
+    private final JwtService jwtService;
+
     private final AuthenticationService authenticationService;
 
     @Autowired
-    public AuthenticationController(AuthenticationService authenticationService) {
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
+        this.jwtService = jwtService;
         this.authenticationService = authenticationService;
     }
 
@@ -49,16 +53,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Valid LoginUserDto loginUserDto) {
-        User user = authenticationService.authenticate(loginUserDto);
-        UserResponseDto userResponseDto = new UserResponseDto();
-        userResponseDto.setId(user.getId());
-        userResponseDto.setName(user.getName());
-        userResponseDto.setEmail(user.getEmail());
-        userResponseDto.setUsername(user.getUsername());
-        userResponseDto.setCreatedAt(LocalDateTime.now());
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginUserDto loginUserDto) {
+        User authenticatedUser = authenticationService.authenticate(loginUserDto);
+        String jwtToken = jwtService.generateToken(authenticatedUser);
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(jwtToken);
+        loginResponse.setExpiresIn(jwtService.getExpirationTime());
 
-        return ResponseEntity.ok(userResponseDto);
+        return ResponseEntity.ok(loginResponse);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

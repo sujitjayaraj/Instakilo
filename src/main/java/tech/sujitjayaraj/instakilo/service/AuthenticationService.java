@@ -44,7 +44,7 @@ public class AuthenticationService {
         return userRepository.save(user);
     }
 
-    public User authenticate(LoginUserDto loginUserDto) throws UsernameNotFoundException {
+    public User authenticate(LoginUserDto loginUserDto) throws UsernameNotFoundException{
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginUserDto.getUsername(),
