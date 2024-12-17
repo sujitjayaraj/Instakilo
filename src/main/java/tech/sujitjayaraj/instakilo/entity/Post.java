@@ -21,6 +21,9 @@ public class Post {
     @Size(max = 500)
     private String description;
 
+    @OneToOne(targetEntity = Image.class, fetch = FetchType.LAZY)
+    private Image image;
+
     @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY)
     @JoinTable(
             name = "likes",

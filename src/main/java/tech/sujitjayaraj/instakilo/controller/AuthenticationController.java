@@ -36,20 +36,13 @@ public class AuthenticationController {
     public ResponseEntity<UserResponseDto> signup(@RequestBody @Valid RegisterUserDto registerUserDto) {
         User user = authenticationService.signup(registerUserDto);
 
-        UserResponseDto userResponseDto = new UserResponseDto();
-        userResponseDto.setId(user.getId());
-        userResponseDto.setName(user.getName());
-        userResponseDto.setEmail(user.getEmail());
-        userResponseDto.setUsername(user.getUsername());
-        userResponseDto.setCreatedAt(LocalDateTime.now());
-
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/users/{id}")
                 .buildAndExpand(user.getId())
                 .toUri();
 
-        return ResponseEntity.created(location).body(userResponseDto);
+        return ResponseEntity.created(location).build();
     }
 
     @PostMapping("/login")

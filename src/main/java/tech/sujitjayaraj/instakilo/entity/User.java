@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
@@ -41,8 +42,8 @@ public class User implements UserDetails {
     @Size(max = 50)
     private String description;
 
-    @Lob
-    private byte[] profileImage;
+    @OneToOne(targetEntity = Image.class, fetch = FetchType.LAZY)
+    private Image profileImage;
 
     @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY)
     @JoinTable(
@@ -72,6 +73,8 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    private Instant createdAt;
+
     public enum Role {
         ADMIN, USER
     }
@@ -92,5 +95,10 @@ public class User implements UserDetails {
 
     public String getName() {
         return getFirstName() + " " + getLastName();
+    }
+
+    @PrePersist
+    public void setCreated() {
+        this.createdAt = Instant.now();
     }
 }
