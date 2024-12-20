@@ -1,11 +1,14 @@
 package tech.sujitjayaraj.instakilo.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
+@Data
 @Entity
 public class User {
 
@@ -13,10 +16,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private String username;
+
+    private String firstName;
+
+    private String lastName;
+
     private String description;
 
     private Gender gender;
 
+    @CreationTimestamp
     private Instant createdAt;
 
     @OneToOne(mappedBy = "user")
@@ -56,8 +66,7 @@ public class User {
         MALE, FEMALE
     }
 
-    @PrePersist
-    void setCreated() {
-        this.createdAt = Instant.now();
+    public String getName() {
+        return firstName + " " + lastName;
     }
 }
