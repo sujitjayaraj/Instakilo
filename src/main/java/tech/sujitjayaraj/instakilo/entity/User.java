@@ -1,5 +1,8 @@
 package tech.sujitjayaraj.instakilo.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,6 +13,7 @@ import java.util.Set;
 
 @Data
 @Entity
+@JsonIgnoreProperties({"posts", "likes", "comments"})
 public class User {
 
     @Id
@@ -24,28 +28,28 @@ public class User {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     @CreationTimestamp
     private Instant createdAt;
 
-    @OneToOne(mappedBy = "user")
-    private UserCredentials credentials;
-
-    @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY)
+    @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(
             name="followers",
-            joinColumns = @JoinColumn(name = "user_id"),
+            joinColumns = @JoinColumn(name = "following_id"),
             inverseJoinColumns = @JoinColumn(name = "follower_id")
     )
+    @JsonManagedReference
     private Set<User> followers = new HashSet<>();
 
-    @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY)
+    @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(
             name="followers",
             joinColumns = @JoinColumn(name = "follower_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
+            inverseJoinColumns = @JoinColumn(name = "following_id")
     )
+    @JsonBackReference
     private Set<User> followings = new HashSet<>();
 
     @OneToMany(targetEntity = Post.class, mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

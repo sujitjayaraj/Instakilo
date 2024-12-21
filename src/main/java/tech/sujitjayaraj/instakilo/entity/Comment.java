@@ -1,9 +1,13 @@
 package tech.sujitjayaraj.instakilo.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 
+@Data
 @Entity
 public class Comment {
 
@@ -19,17 +23,10 @@ public class Comment {
 
     private String description;
 
+    @CreationTimestamp
     private Instant createdAt;
 
+    @UpdateTimestamp
     private Instant editedAt;
 
-    @PrePersist
-    void setCreated() {
-        this.createdAt = Instant.now();
-    }
-
-    @PreUpdate
-    void setEdited() {
-        this.editedAt = Instant.now();
-    }
 }
