@@ -1,19 +1,20 @@
 package tech.sujitjayaraj.instakilo.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
-@JsonIgnoreProperties({"posts", "likes", "comments"})
 public class User {
 
     @Id
@@ -31,16 +32,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @CreationTimestamp
-    private Instant createdAt;
-
     @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(
             name="followers",
             joinColumns = @JoinColumn(name = "following_id"),
             inverseJoinColumns = @JoinColumn(name = "follower_id")
     )
-    @JsonManagedReference
     private Set<User> followers = new HashSet<>();
 
     @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST})
@@ -49,7 +46,6 @@ public class User {
             joinColumns = @JoinColumn(name = "follower_id"),
             inverseJoinColumns = @JoinColumn(name = "following_id")
     )
-    @JsonBackReference
     private Set<User> followings = new HashSet<>();
 
     @OneToMany(targetEntity = Post.class, mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -66,11 +62,34 @@ public class User {
     @OneToMany(targetEntity = Comment.class, mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Comment> comments = new HashSet<>();
 
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    private Instant lastActive;
+
     public enum Gender {
         MALE, FEMALE
     }
 
     public String getName() {
         return firstName + " " + lastName;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        User user = (User) o;
+        return getId() != null && Objects.equals(getId(), user.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }

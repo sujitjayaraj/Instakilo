@@ -1,11 +1,11 @@
 package tech.sujitjayaraj.instakilo.controller;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import tech.sujitjayaraj.instakilo.dto.UserResponseDto;
 import tech.sujitjayaraj.instakilo.entity.User;
 import tech.sujitjayaraj.instakilo.entity.UserCredentials;
 import tech.sujitjayaraj.instakilo.service.UserService;
@@ -25,10 +25,10 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Long id) {
+    public ResponseEntity<UserResponseDto> getUser(@PathVariable Long id) {
         User user = userService.getUser(id);
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userService.getUserDto(user));
     }
 
     @PostMapping("/{id}/follow")
@@ -52,9 +52,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}/followers")
-    @JsonProperty("followers")
-    public ResponseEntity<Set<User>> getFollowers(@PathVariable Long id) {
+    public ResponseEntity<Set<UserResponseDto>> getFollowers(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getFollowers(id));
+    }
+
+    @GetMapping("/{id}/followings")
+    public ResponseEntity<Set<UserResponseDto>> getFollowings(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getFollowings(id));
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)

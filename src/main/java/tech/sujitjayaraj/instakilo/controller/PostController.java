@@ -8,6 +8,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import tech.sujitjayaraj.instakilo.dto.CommentDto;
+import tech.sujitjayaraj.instakilo.dto.PostDto;
 import tech.sujitjayaraj.instakilo.entity.Comment;
 import tech.sujitjayaraj.instakilo.entity.Post;
 import tech.sujitjayaraj.instakilo.entity.UserCredentials;
@@ -37,6 +39,11 @@ public class PostController {
                 .toUri();
 
         return ResponseEntity.created(locationURI).build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PostDto> getPost(@PathVariable Long id) {
+        return ResponseEntity.ok(postService.getPostDto(id));
     }
 
     @DeleteMapping("/{id}")
@@ -86,19 +93,16 @@ public class PostController {
     }
 
     @GetMapping("/{id}/comments")
-    public ResponseEntity<Set<Comment>> getComments(@PathVariable Long id) {
-        Post post = postService.getPost(id);
-        return ResponseEntity.ok(post.getComments());
+    public ResponseEntity<Set<CommentDto>> getComments(@PathVariable Long id) {
+        return ResponseEntity.ok(postService.getComments(id));
     }
 
     @PostMapping("/{id}/comments")
-    public ResponseEntity<Void> addComment(@PathVariable Long id, @RequestBody @Valid Comment comment, @AuthenticationPrincipal UserCredentials userCredentials) {
-        Post post = postService.getPost(id);
+    public ResponseEntity<String> addComment(@PathVariable Long id, @RequestBody @Valid Comment comment, @AuthenticationPrincipal UserCredentials userCredentials) {
         comment.setUser(userCredentials.getUser());
-        post.getComments().add(comment);
-        postService.createPost(post);
+        postService.addComment(id, comment);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Comment added to post with id " + id);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
